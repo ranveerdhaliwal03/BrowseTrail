@@ -1,0 +1,49 @@
+Workflow for authorizing user of extension
+
+Why getAuthToken rather than launchWebAuthFlow:
+    - getAuthToken was the method chosen for authorizing the it uses the Google account already signed into Chrome, where as launchWebAuthFlow 
+    opens an independent OAuth flow in a popup window (less practical for an extension)
+    - this aligns more with the intent of the extension, grabbing the user history
+    
+    *** Possible Update *** -- allow user the option in the window to switch account (first defaulting to account already signed into Chrome)
+
+
+
+WORKFLOW
+1. User clicks extension
+    - wakes up background.js (service worker)
+    - service worker calls "chrome.identity.getAuthToken({ interactive: true })"
+
+2. Chrome provides OAuth Token 
+    - if user signed into chrome 
+        - Chrome gives OAuth token 
+    - else
+        - chrome prompts to sign in
+
+3. Exchange OAuth token for Firebase Credential
+    - Use GoogleAuthProvider.credential(null, token) from Firebase SDK
+    - Call signInWithCredential(auth, credential)
+    - Chrome browser user is also recognized by Firebase.
+
+4. Check/Create user in Firebase
+    - after login, check user
+    - if new
+        - create profile in FireStore
+    - elif exists 
+        - continue
+
+5. Load UI
+    - open Index.html 
+    - display chome history
+
+
+User → Extension Icon → Background.js → chrome.identity.getAuthToken
+chrome.identity.getAuthToken → Google Chrome Profile (Google Account)
+Google Chrome Profile → returns OAuth token → Background.js
+Background.js → Firebase Auth (signInWithCredential)
+Firebase Auth → Firebase Database (check/create user)
+Firebase Database → Background.js (user verified)
+Background.js → opens index.html (React UI)
+React UI → Firebase Auth (confirm signed in user)
+React UI → Chrome History API (fetch browsing history)
+React UI → displays history for that user
