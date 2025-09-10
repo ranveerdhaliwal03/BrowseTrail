@@ -5,13 +5,26 @@ const App: React.FC = () => {
   const [historyItems, setHistoryItems] = useState<chrome.history.HistoryItem[]>([]);
 
   useEffect(() => {
-    // Get token from URL
+    // 1. Try reading token from URL
     const params = new URLSearchParams(window.location.search);
     const t = params.get("token");
-    setToken(t || null);
 
     if (t) {
-      // Only fetch Chrome history if user is logged in
+      setToken(t);
+      fetchHistory();
+    } else {
+      // 2. Fallback: ask background for token
+      chrome.runtime.sendMessage({ type: "GET_TOKEN" }, (response) => {
+        if (response?.token) {
+          setToken(response.token);
+          fetchHistory();
+        } else {
+          setToken(null);
+        }
+      });
+    }
+
+    function fetchHistory() {
       chrome.history.search({ text: "", maxResults: 50 }, (results) => {
         setHistoryItems(results);
       });
