@@ -16,9 +16,12 @@ chrome.action.onClicked.addListener(() => {
       const credential = GoogleAuthProvider.credential(null, token);
 
       // 2. Sign in with Firebase
+      // Convert OAuth Access token from google profile (curr signed in) to firebase cred.
       const result = await signInWithCredential(auth, credential);
       const user = result.user;
 
+      console.log(result)
+      
       // 3. Check Firestore for user doc
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
