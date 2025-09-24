@@ -33,6 +33,9 @@ WORKFLOW
         - continue
 
 5. Load UI
+    - calls onAuthStateChanged(auth, callback)
+        - checks IndexedDB in Firebase
+            - if valid --> auto-resotes it and call the callback with the correct user
     - open Index.html 
     - display chome history
 
